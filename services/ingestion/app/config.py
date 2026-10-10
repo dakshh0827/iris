@@ -53,16 +53,23 @@ class Settings(BaseSettings):
     # A separate, throw-away database for the tests. Tests that need it are skipped when it isn't set.
     test_database_url: SecretStr | None = None
 
+    # Embeddings (Phase 6). The model is downloaded once into models_dir
+    # (python -m app.indexing.download_model) and then only loaded from there,
+    # so the service never downloads anything while it runs.
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_batch_size: int = Field(default=64, gt=0, le=1024)
+    models_dir: Path = PROJECT_ROOT / "models"
+
     @field_validator("log_level", mode="before")
     @classmethod
     def upper_case_log_level(cls, value: object) -> object:
         """Accept 'info' as well as 'INFO' from the environment."""
         return value.upper() if isinstance(value, str) else value
 
-    @field_validator("data_dir")
+    @field_validator("data_dir", "models_dir")
     @classmethod
     def make_data_dir_absolute(cls, value: Path) -> Path:
-        """Turn a relative IRIS_DATA_DIR into an absolute path under the project root.
+        """Turn a relative IRIS_DATA_DIR (or IRIS_MODELS_DIR) into an absolute path under the project root.
 
         Without this, 'data' would mean a different folder depending on where you
         started Python from.
@@ -84,6 +91,11 @@ class Settings(BaseSettings):
     def uploads_dir(self) -> Path:
         """Where Phase 2 stores the original uploaded files."""
         return self.data_dir / "uploads"
+
+    @property
+    def embedding_model_dir(self) -> Path:
+        """Folder of the downloaded embedding model, e.g. models/sentence-transformers__all-MiniLM-L6-v2."""
+        return self.models_dir / self.embedding_model.replace("/", "__")
 
     @property
     def max_upload_size_bytes(self) -> int:

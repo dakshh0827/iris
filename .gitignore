@@ -19,6 +19,8 @@ htmlcov/
 # ---- Data created at runtime (the supplied dataset in data/ IS committed) ----
 data/uploads/
 data/chroma/
+# The embedding model (about 90 MB) is downloaded, not committed.
+models/
 
 # ---- Editors and operating systems ----
 .vscode/
