@@ -1,0 +1,30 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# ---- Secrets and personal settings ----
+# .env holds your own values (later: passwords). Only .env.example is shared.
+.env
+.env.*
+!.env.example
+
+# ---- Data created at runtime (the supplied dataset in data/ IS committed) ----
+data/uploads/
+data/chroma/
+
+# ---- Editors and operating systems ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log

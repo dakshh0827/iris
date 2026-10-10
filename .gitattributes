@@ -1,0 +1,13 @@
+# Store text files with LF line endings in git, and let each computer use its
+# own line endings when checking files out (CRLF on Windows, LF on Mac/Linux).
+* text=auto
+
+# The dataset must stay byte-for-byte identical on every computer: the pipeline
+# identifies documents by a hash of their exact bytes, and CFTC_2022.txt and the
+# CSV files use Windows (CRLF) line endings. So git must never convert them.
+data/** -text
+
+# Binary files, never converted.
+*.pdf binary
+*.png binary
+*.jpg binary
