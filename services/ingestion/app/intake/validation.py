@@ -2,7 +2,7 @@
 
 - check_file_type(): the real type, from the file's first bytes (Step 2)
 - check_size(): not empty, not over the upload limit (Step 3)
-Step 4 adds the file-name check to this same file.
+- safe_file_name(): a file name that is safe to use on disk (Step 4)
 
 Try it from services/ingestion:   python -m app.intake.validation
 """
@@ -10,11 +10,12 @@ Try it from services/ingestion:   python -m app.intake.validation
 from __future__ import annotations
 
 import codecs
+import re
 from pathlib import PurePath
 from typing import Literal
 
 from app.config import get_settings
-from app.errors import EmptyFile, FileTooLarge, UnsupportedFileType
+from app.errors import EmptyFile, FileTooLarge, InvalidFileName, UnsupportedFileType
 
 # The three types the pipeline can extract text from (Phase 3).
 FileType = Literal["pdf", "html", "txt"]
@@ -34,6 +35,17 @@ SNIFF_SIZE = 8192
 PDF_SIGNATURE = b"%PDF-"
 UTF8_BOM = b"\xef\xbb\xbf"  # 3 invisible bytes some editors put at the start of UTF-8 text
 HTML_STARTS = ("<!doctype html", "<html")
+
+# File names: anything that is not a letter, digit, dot, underscore or hyphen
+# becomes "_". Spaces, slashes, colons, quotes and accents are all replaced.
+UNSAFE_NAME_CHARS = re.compile(r"[^A-Za-z0-9._-]")
+MAX_NAME_LENGTH = 200  # well under the 255-character limit of Windows and Linux
+# Names Windows reserves for devices. A file called "CON.pdf" can't be created there.
+WINDOWS_RESERVED_NAMES = {
+    "CON", "PRN", "AUX", "NUL",
+    *(f"COM{n}" for n in range(1, 10)),
+    *(f"LPT{n}" for n in range(1, 10)),
+}
 
 
 def _looks_like_utf8_text(head: bytes) -> str | None:
@@ -135,6 +147,44 @@ def check_size(size_bytes: int, limit_bytes: int | None = None) -> None:
         )
 
 
+def safe_file_name(file_name: str) -> str:
+    """Return a version of `file_name` that is safe to use as a file on disk.
+
+    The name comes from the person uploading, so it can contain anything,
+    including folder parts like "../../" that would write outside our folder.
+    We never use it directly as a path. Instead we:
+      1. keep only the last part after any / or \\ (drops "../" and "C:\\Users\\...")
+      2. replace every character except A-Z a-z 0-9 . _ - with "_"
+      3. squeeze repeated "_" into one
+      4. strip dots, "_" and "-" from the start and end ("..", ".env", "name.")
+      5. rename Windows device names ("CON.pdf" -> "file_CON.pdf")
+      6. shorten very long names, keeping the extension
+
+    Raises InvalidFileName if nothing usable is left.
+    The original name is kept separately (Phase 5 stores it in the database).
+    """
+    last_part = file_name.replace("\\", "/").split("/")[-1]
+    name = UNSAFE_NAME_CHARS.sub("_", last_part)
+    name = re.sub(r"_+", "_", name)
+    name = name.strip("._-")
+
+    if not name:
+        raise InvalidFileName(
+            "The file name has no usable characters. Rename the file and try again.",
+            file_name=file_name,
+        )
+
+    # Windows looks at the part before the first dot: "con.tar.gz" is reserved too.
+    if name.split(".")[0].upper() in WINDOWS_RESERVED_NAMES:
+        name = f"file_{name}"
+
+    if len(name) > MAX_NAME_LENGTH:
+        extension = PurePath(name).suffix  # ".pdf", or "" when there is none
+        keep = MAX_NAME_LENGTH - len(extension)
+        name = name[:keep].rstrip("._-") + extension
+    return name
+
+
 if __name__ == "__main__":
     settings = get_settings()
     print(f"Upload limit: {format_size(settings.max_upload_size_bytes)}")
@@ -160,6 +210,16 @@ if __name__ == "__main__":
         except UnsupportedFileType as error:
             print(f"{name:<32} rejected: {error}")
 
+    print()
+    for name in ["MiFID_II_2023_v1.pdf", "../../hack.pdf", "C:\\Users\\me\\My Rules (final).pdf",
+                 "r\u00e8gles 2023.txt", ".env", "CON.pdf"]:
+        print(f"{name!r:<36} -> {safe_file_name(name)}")
+    try:
+        safe_file_name("../..")
+    except InvalidFileName as error:
+        print(f"{'../..'!r:<36} rejected: {error}")
+
+    print()
     for size_bytes in [0, settings.max_upload_size_bytes + 1]:
         try:
             check_size(size_bytes)
