@@ -1,0 +1,52 @@
+{
+  "$$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trade Reporting Schema",
+  "type": "object",
+  "properties": {
+    "Trade_ID": {
+      "type": "string",
+      "description": "Unique identifier per trade (must be alphanumeric, max 12 chars)."
+    },
+    "Asset_Class": {
+      "type": "string",
+      "enum": ["Equity", "Bond", "FX", "Derivative", "Commodity"],
+      "description": "Broad asset class of the trade."
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO‑8601 timestamp when the trade was executed."
+    },
+    "Counterparty_LEI": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{20}$$",
+      "description": "Legal Entity Identifier of the counterparty."
+    },
+    "Price": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Trade price – must be non‑negative."
+    },
+    "Quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of units traded."
+    },
+    "Currency": {
+      "type": "string",
+      "enum": ["USD","EUR","GBP","JPY","CHF"],
+      "description": "Currency of the trade."
+    },
+    "Maturity_Date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Only for derivatives; nullable for spot trades."
+    },
+    "Underlying_ISIN": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Z0-9]{12}$$",
+      "description": "ISIN of the underlying instrument, where applicable."
+    }
+  },
+  "required": ["Trade_ID","Asset_Class","Timestamp","Counterparty_LEI","Price","Quantity","Currency"]
+}

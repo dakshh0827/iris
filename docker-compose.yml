@@ -1,0 +1,24 @@
+# Reg IRIS local services. Start with:  docker compose up -d
+# Values like ${IRIS_DB_PASSWORD} come from the .env file next to this file.
+# Phase 5 adds PostgreSQL; later phases add Elasticsearch and the ingestion service itself.
+
+services:
+  postgres:
+    image: postgres:16.10
+    environment:
+      POSTGRES_USER: ${IRIS_DB_USER:-iris}
+      POSTGRES_PASSWORD: ${IRIS_DB_PASSWORD:?Set IRIS_DB_PASSWORD in .env}
+      POSTGRES_DB: ${IRIS_DB_NAME:-reg_iris}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data              # keeps data between restarts
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro  # runs once, on first start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${IRIS_DB_USER:-iris} -d ${IRIS_DB_NAME:-reg_iris}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:

@@ -1,0 +1,155 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "filter": {
+        "reg_synonyms": {
+          "type": "synonym_graph",
+          "synonyms": [
+            "lei, legal entity identifier",
+            "isin, international securities identification number",
+            "mic, market identifier code",
+            "otc, over the counter",
+            "fx, foreign exchange",
+            "mtf, multilateral trading facility",
+            "t+1, one business day"
+          ]
+        },
+        "english_stemmer": {
+          "type": "stemmer",
+          "language": "english"
+        },
+        "english_possessive": {
+          "type": "stemmer",
+          "language": "possessive_english"
+        }
+      },
+      "analyzer": {
+        "reg_en": {
+          "char_filter": [
+            "underscore_to_space"
+          ],
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "english_possessive",
+            "english_stemmer"
+          ]
+        },
+        "reg_en_search": {
+          "char_filter": [
+            "underscore_to_space"
+          ],
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "reg_synonyms",
+            "english_possessive",
+            "english_stemmer"
+          ]
+        }
+      },
+      "char_filter": {
+        "underscore_to_space": {
+          "type": "pattern_replace",
+          "pattern": "_",
+          "replacement": " "
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "chunk_id": {
+        "type": "keyword"
+      },
+      "version_id": {
+        "type": "keyword"
+      },
+      "document_key": {
+        "type": "keyword"
+      },
+      "file_name": {
+        "type": "keyword"
+      },
+      "version_number": {
+        "type": "integer"
+      },
+      "version_label": {
+        "type": "keyword"
+      },
+      "is_current": {
+        "type": "boolean"
+      },
+      "regulator": {
+        "type": "keyword"
+      },
+      "jurisdiction": {
+        "type": "keyword"
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "effective_date": {
+        "type": "date",
+        "format": "yyyy-MM-dd"
+      },
+      "chunk_index": {
+        "type": "integer"
+      },
+      "clause_ref": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "type": "text",
+            "analyzer": "reg_en",
+            "search_analyzer": "reg_en_search"
+          }
+        }
+      },
+      "heading": {
+        "type": "text",
+        "analyzer": "reg_en",
+        "search_analyzer": "reg_en_search",
+        "fields": {
+          "raw": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "text": {
+        "type": "text",
+        "analyzer": "reg_en",
+        "search_analyzer": "reg_en_search",
+        "term_vector": "with_positions_offsets"
+      },
+      "page_start": {
+        "type": "integer"
+      },
+      "page_end": {
+        "type": "integer"
+      },
+      "anchor": {
+        "type": "keyword"
+      },
+      "line_start": {
+        "type": "integer"
+      },
+      "line_end": {
+        "type": "integer"
+      },
+      "foreign_content": {
+        "type": "boolean"
+      },
+      "embedded_source": {
+        "type": "keyword"
+      },
+      "text_hash": {
+        "type": "keyword"
+      }
+    }
+  }
+}

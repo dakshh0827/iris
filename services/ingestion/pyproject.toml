@@ -1,0 +1,20 @@
+# Project settings for the ingestion service.
+# For now this file only configures pytest; Phase 12 adds packaging details.
+
+[tool.pytest.ini_options]
+# Where pytest looks for tests.
+testpaths = ["tests"]
+# Put services/ingestion on Python's search path, so tests can `import app`.
+pythonpath = ["."]
+# Show a short summary of failed and skipped tests at the end.
+addopts = "-ra"
+# Labels for tests that need something extra. Registered here so typos are caught.
+# FastAPI's TestClient prints a deprecation notice about httpx on every run.
+# It is about a future library change, not about our code, so we hide just that one message.
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
+markers = [
+    "slow: takes more than a few seconds (for example loading the embedding model)",
+    "integration: needs a real service running (Postgres, Elasticsearch)",
+]

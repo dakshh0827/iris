@@ -1,0 +1,45 @@
+{
+  "regulator": "MiFID II",
+  "jurisdiction": "EU",
+  "rules": [
+    {
+      "id": "MIFID-1",
+      "description": "Trade must contain a valid LEI for the counterparty.",
+      "logic": {
+        "and": [
+          {"var": "Counterparty_LEI"},
+          {"regex": ["Counterparty_LEI", "^[0-9A-Z]{20}$$"] }
+        ]
+      },
+      "impact": "Field Counterparty_LEI is mandatory and must be 20‑character alphanumeric."
+    },
+    {
+      "id": "MIFID-2",
+      "description": "Price must be non‑negative.",
+      "logic": { ">=": [ {"var":"Price"}, 0 ] },
+      "impact": "Field Price cannot be negative."
+    },
+    {
+      "id": "MIFID-3",
+      "description": "If Asset_Class = Derivative, Maturity_Date is mandatory.",
+      "logic": {
+        "if": [
+          {"==": [ {"var":"Asset_Class"}, "Derivative"]},
+          {"var":"Maturity_Date"},
+          true
+        ]
+      },
+      "impact": "Derivatives need a Maturity_Date."
+    },
+    {
+      "id": "MIFID-4",
+      "description": "Trade timestamp must be after 2018‑01‑01 for this version of MiFID.",
+      "logic": {
+        ">=": [
+          {"toNumber": {"substr": [ {"var":"Timestamp"}, 0, 10 ] }},  "20180101"
+        ]
+      },
+      "impact": "Old historic trades before 2018‑01‑01 are out of scope."
+    }
+  ]
+}

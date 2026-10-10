@@ -1,0 +1,31 @@
+CFTC (2022) – Commodity Futures Reporting FAQ
+-------------------------------------------------
+Q1: What is the official name of the reporting system?
+A1: The system is called the Commodity Futures Trading Commission Trade Reporting System (CFTC‑TRS).
+
+Q2: Which trades must be reported?
+A2: All futures, options on futures, swaps and other derivatives that are executed on U.S. exchanges or clearing houses must be reported. The report must include Trade_ID, Asset_Class, Execution_Timestamp, Counterparty_LEI (if available), Price, Quantity, Currency, and Notional_Amount.
+
+Q3: Are negative price values allowed?
+A3: No – the price field must be a non‑negative numeric value. Submissions that contain a negative price will be rejected and returned with error code E‑001.
+
+Q4: What is the deadline for reporting a trade?
+A4: Trades must be reported within 15 minutes of execution for standardised contracts and within one business day for non‑standardised contracts.
+
+Q5: Do we need to include a LEI for every counterparty?
+A5: A valid 20‑character LEI is required for any counterparty that is a registered entity with a GLEIF‑accredited Local Operating Unit. If the counterparty is not LEI‑registered, the field may be left blank, but the firm must retain an internal identifier for audit purposes.
+
+Q6: How long must we retain the reports and supporting documentation?
+A6: All reports and supporting documentation (trade confirmations, broker statements, etc.) must be retained for a minimum of seven (7) years in a format that allows electronic retrieval.
+
+Q7: What are the penalties for non‑compliance?
+A7: The CFTC may impose civil monetary penalties up to USD 5 million per violation, and in cases of willful non‑compliance, criminal penalties may also be pursued.
+
+Q8: Is there a list of approved currency codes?
+A8: Yes – the CFTC accepts the ISO 4217 three‑letter currency codes. The most common are USD, EUR, GBP, JPY, and CHF. Use of any other code must be justified and documented.
+
+Q9: Where can we find the technical specifications for the trade report file format?
+A9: The technical specifications are published on the CFTC website under “Reporting Guidelines – File Specification v2.1”. They include the exact field order, data types and length restrictions.
+
+Q10: How are amendments to previously submitted trades handled?
+A10: Amendments must be submitted as a separate file with the same Trade_ID and a flag “Amendment=Y”. The amendment file must include the corrected fields and a timestamp indicating the amendment date.

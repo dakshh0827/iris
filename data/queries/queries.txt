@@ -1,0 +1,10 @@
+1. Which trades are missing a Counterparty LEI?
+2. Show me all Derivative trades that do not have a Maturity Date.
+3. List any trade where the price is negative.
+4. How many trades use a currency that is not in the approved list (USD, EUR, GBP, JPY, CHF)?
+5. Give me the paragraph that defines the LEI requirement under MiFID II.
+6. Which trades were executed before 2018‑01‑01?
+7. Show the latest FCA guidance that mentions “FX trades”.
+8. What are the differences between the 2022 and 2023 versions of the EMIR document?
+9. Summarise the Dodd‑Frank rule about trade reporting latency.
+10. Which regulations have been uploaded in the last 7 days?
