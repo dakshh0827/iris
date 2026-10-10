@@ -1,8 +1,8 @@
 """Checks that decide whether an uploaded file is acceptable.
 
-Step 2 (this version): detect the real file type from the file's first bytes
-and make sure it matches the file extension. Steps 3 and 4 add the size,
-empty-file and file-name checks to this same file.
+- check_file_type(): the real type, from the file's first bytes (Step 2)
+- check_size(): not empty, not over the upload limit (Step 3)
+Step 4 adds the file-name check to this same file.
 
 Try it from services/ingestion:   python -m app.intake.validation
 """
@@ -13,7 +13,8 @@ import codecs
 from pathlib import PurePath
 from typing import Literal
 
-from app.errors import UnsupportedFileType
+from app.config import get_settings
+from app.errors import EmptyFile, FileTooLarge, UnsupportedFileType
 
 # The three types the pipeline can extract text from (Phase 3).
 FileType = Literal["pdf", "html", "txt"]
@@ -103,14 +104,49 @@ def check_file_type(file_name: str, head: bytes) -> FileType:
     return detected
 
 
-if __name__ == "__main__":
-    from app.config import get_settings
+def format_size(size_bytes: int) -> str:
+    """Return a size people can read: 512 -> "512 bytes", 3930212 -> "3.7 MB"."""
+    if size_bytes < 1024:
+        return f"{size_bytes} bytes"
+    if size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    return f"{size_bytes / (1024 * 1024):.1f} MB"
 
-    regulations_dir = get_settings().regulations_dir
+
+def check_size(size_bytes: int, limit_bytes: int | None = None) -> None:
+    """Raise EmptyFile or FileTooLarge if the size is not acceptable.
+
+    `limit_bytes` defaults to the IRIS_MAX_UPLOAD_SIZE_MB setting. Tests pass
+    their own limit so they don't depend on the settings. A file exactly at
+    the limit is accepted; one byte more is refused.
+    """
+    if limit_bytes is None:
+        limit_bytes = get_settings().max_upload_size_bytes
+
+    if size_bytes == 0:
+        raise EmptyFile("The file is empty (0 bytes).", size_bytes=0)
+    if size_bytes > limit_bytes:
+        raise FileTooLarge(
+            # Exact bytes too: 1 byte over 50 MB would otherwise read "50.0 MB; the limit is 50.0 MB".
+            f"The file is {format_size(size_bytes)} ({size_bytes:,} bytes); "
+            f"the limit is {format_size(limit_bytes)} ({limit_bytes:,} bytes).",
+            size_bytes=size_bytes,
+            limit_bytes=limit_bytes,
+        )
+
+
+if __name__ == "__main__":
+    settings = get_settings()
+    print(f"Upload limit: {format_size(settings.max_upload_size_bytes)}")
+    print()
+
+    regulations_dir = settings.regulations_dir
     for path in sorted(regulations_dir.iterdir()):
         with path.open("rb") as file:
             head = file.read(SNIFF_SIZE)
-        print(f"{path.name:<32} {check_file_type(path.name, head)}")
+        size_bytes = path.stat().st_size  # the size from the file system, without reading the file
+        check_size(size_bytes)
+        print(f"{path.name:<32} {check_file_type(path.name, head):<5} {format_size(size_bytes):>9}")
 
     print()
     fakes = {
@@ -123,3 +159,9 @@ if __name__ == "__main__":
             check_file_type(name, head)
         except UnsupportedFileType as error:
             print(f"{name:<32} rejected: {error}")
+
+    for size_bytes in [0, settings.max_upload_size_bytes + 1]:
+        try:
+            check_size(size_bytes)
+        except (EmptyFile, FileTooLarge) as error:
+            print(f"{'size ' + str(size_bytes) + ' bytes':<32} rejected: {error}")
