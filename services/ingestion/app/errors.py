@@ -101,6 +101,30 @@ class CorruptDocument(IngestionError):
     status_code = 422  # HTTP 422 Unprocessable Content
 
 
+class NotFound(IngestionError):
+    """A document, version, job or file that doesn't exist (Phase 9)."""
+
+    code = "not_found"
+    title = "Not found"
+    status_code = 404
+
+
+class Conflict(IngestionError):
+    """The request clashes with the current state, e.g. a version that is being processed (Phase 9)."""
+
+    code = "conflict"
+    title = "Conflict"
+    status_code = 409
+
+
+class ServiceUnavailable(IngestionError):
+    """Something the service needs (database, search) is not configured or not reachable (Phase 9)."""
+
+    code = "service_unavailable"
+    title = "Service unavailable"
+    status_code = 503
+
+
 if __name__ == "__main__":
     for error in [
         EmptyFile("The file is empty (0 bytes).", file_name="notes.txt"),

@@ -19,13 +19,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
 from app.db.models import Base
+from app.errors import ServiceUnavailable
 
 
-class DatabaseNotConfigured(RuntimeError):
+class DatabaseNotConfigured(ServiceUnavailable):
     """IRIS_DATABASE_URL is missing."""
 
 
-class SchemaMissing(RuntimeError):
+class SchemaMissing(ServiceUnavailable):
     """A table or column ingestion needs is not in the database."""
 
 

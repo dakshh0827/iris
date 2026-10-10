@@ -1,7 +1,6 @@
 # Reg IRIS ingestion service: pinned dependencies.
 # Install with (from the project root):  python -m pip install -r services/ingestion/requirements.txt
-# Tested on Python 3.11. More libraries are added in later phases
-# (Elasticsearch in Phase 8).
+# Tested on Python 3.11.
 
 # --- Web API (Phase 1, 9) ---
 fastapi==0.143.0            # the web framework for our REST endpoints
@@ -30,6 +29,9 @@ sentence-transformers==6.1.0    # loads all-MiniLM-L6-v2 and turns text into vec
 
 # --- Vector store (Phase 7) ---
 chromadb==1.5.9                 # stores chunk vectors on disk (data/chroma) and finds the closest ones
+
+# --- Keyword search (Phase 8) ---
+elasticsearch==9.5.1            # Python client; must match the server's major version (9, see docker-compose.yml)
 
 # --- Testing (every phase) ---
 pytest==9.1.1               # test runner

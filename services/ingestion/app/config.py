@@ -64,6 +64,15 @@ class Settings(BaseSettings):
     # different models are never mixed. The data lives in data/chroma (git-ignored).
     chroma_collection: str = "reg_paragraphs__minilm_l6_v2"
 
+    # Elasticsearch (Phase 8): keyword search. Locally it runs in Docker without a
+    # password (docker-compose.yml); a hosted cluster needs an API key in .env.
+    elasticsearch_url: str = "http://localhost:9200"
+    elasticsearch_api_key: SecretStr | None = None
+    es_index: str = "reg_paragraphs"   # an alias; the real index is reg_paragraphs_v1
+    # A separate Elasticsearch for the tests (it may be the same server: tests use their own
+    # throw-away "test_..." indexes). Tests that need it are skipped when it isn't set.
+    test_elasticsearch_url: str | None = None
+
     @field_validator("log_level", mode="before")
     @classmethod
     def upper_case_log_level(cls, value: object) -> object:

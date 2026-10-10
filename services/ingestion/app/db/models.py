@@ -101,6 +101,12 @@ class DocumentChunk(Base):
     heading: Mapped[str | None] = mapped_column(Text)
     foreign_content: Mapped[bool] = mapped_column(Boolean, default=False)
     embedded_source: Mapped[str | None] = mapped_column(Text)
+    # Set by the pipeline (Phase 9) once the chunk is in each index; NULL = not there yet.
+    es_document_id: Mapped[str | None] = mapped_column(Text)
+    es_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    vector_id: Mapped[str | None] = mapped_column(Text)
+    embedding_model: Mapped[str | None] = mapped_column(Text)
+    embedded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class AuditEvent(Base):
