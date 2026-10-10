@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     embedding_batch_size: int = Field(default=64, gt=0, le=1024)
     models_dir: Path = PROJECT_ROOT / "models"
 
+    # ChromaDB (Phase 7). One collection per embedding model, so vectors of two
+    # different models are never mixed. The data lives in data/chroma (git-ignored).
+    chroma_collection: str = "reg_paragraphs__minilm_l6_v2"
+
     @field_validator("log_level", mode="before")
     @classmethod
     def upper_case_log_level(cls, value: object) -> object:
@@ -91,6 +95,11 @@ class Settings(BaseSettings):
     def uploads_dir(self) -> Path:
         """Where Phase 2 stores the original uploaded files."""
         return self.data_dir / "uploads"
+
+    @property
+    def chroma_dir(self) -> Path:
+        """Where ChromaDB keeps its files (Phase 7)."""
+        return self.data_dir / "chroma"
 
     @property
     def embedding_model_dir(self) -> Path:

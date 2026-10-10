@@ -1,7 +1,7 @@
 # Reg IRIS ingestion service: pinned dependencies.
 # Install with (from the project root):  python -m pip install -r services/ingestion/requirements.txt
 # Tested on Python 3.11. More libraries are added in later phases
-# (ChromaDB in Phase 7, Elasticsearch in Phase 8).
+# (Elasticsearch in Phase 8).
 
 # --- Web API (Phase 1, 9) ---
 fastapi==0.143.0            # the web framework for our REST endpoints
@@ -27,6 +27,9 @@ psycopg[binary]==3.2.13     # the PostgreSQL driver SQLAlchemy uses ("postgresql
 torch==2.14.0                   # the maths library the model runs on
 transformers==5.17.0            # reads the model files (used by sentence-transformers)
 sentence-transformers==6.1.0    # loads all-MiniLM-L6-v2 and turns text into vectors
+
+# --- Vector store (Phase 7) ---
+chromadb==1.5.9                 # stores chunk vectors on disk (data/chroma) and finds the closest ones
 
 # --- Testing (every phase) ---
 pytest==9.1.1               # test runner
