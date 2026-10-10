@@ -1,0 +1,21 @@
+# Reg IRIS ingestion service: pinned dependencies.
+# Install with:  python -m pip install -r requirements.txt
+# Tested on Python 3.11. More libraries are added in later phases
+# (database in Phase 5, embeddings in Phase 6, ChromaDB in Phase 7, Elasticsearch in Phase 8).
+
+# --- Web API (Phase 1, 9) ---
+fastapi==0.143.0            # the web framework for our REST endpoints
+uvicorn[standard]==0.54.0   # the server that runs the FastAPI app
+python-multipart==0.0.32    # lets FastAPI receive file uploads (multipart/form-data)
+
+# --- Data validation and configuration (Phase 1 onwards) ---
+pydantic==2.14.0            # data models with type checking
+pydantic-settings==2.15.0   # reads settings from environment variables and .env
+
+# --- Document extraction (Phase 3) ---
+pymupdf==1.28.2             # PDF text extraction with page numbers (import pymupdf)
+beautifulsoup4==4.15.0      # HTML parsing (we use Python's built-in "html.parser")
+
+# --- Testing (every phase) ---
+pytest==9.1.1               # test runner
+httpx==0.28.1               # needed by FastAPI's TestClient to call the API in tests

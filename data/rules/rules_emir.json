@@ -1,0 +1,24 @@
+{
+  "regulator": "EMIR",
+  "jurisdiction": "EU",
+  "rules": [
+    {
+      "id": "EMIR-1",
+      "description": "All derivatives must include a non‑null Underlying_ISIN.",
+      "logic": {
+        "and": [
+          {"==": [ {"var":"Asset_Class"}, "Derivative"]},
+          {"var":"Underlying_ISIN"},
+          {"regex": ["Underlying_ISIN", "^[A-Z0-9]{12}$"] }
+        ]
+      },
+      "impact": "Derivative trades need a valid ISIN for the underlying instrument."
+    },
+    {
+      "id": "EMIR-2",
+      "description": "Quantity must be a positive integer.",
+      "logic": { ">": [ {"var":"Quantity"}, 0 ] },
+      "impact": "Quantity cannot be zero or negative."
+    }
+  ]
+}

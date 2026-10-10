@@ -1,0 +1,29 @@
+{
+  "regulator": "FCA",
+  "jurisdiction": "UK",
+  "rules": [
+    {
+      "id": "FCA-1",
+      "description": "Currency must be one of the approved list.",
+      "logic": {
+        "in": [ {"var":"Currency"}, ["USD","EUR","GBP","JPY","CHF"] ]
+      },
+      "impact": "Only the five listed currencies are accepted."
+    },
+    {
+      "id": "FCA-2",
+      "description": "If Asset_Class = FX, both Counterparty_LEI and Underlying_ISIN are optional.",
+      "logic": {
+        "if": [
+          {"==": [ {"var":"Asset_Class"}, "FX"]},
+          true,
+          {"and": [
+            {"var":"Counterparty_LEI"},
+            {"var":"Underlying_ISIN"}
+          ]}
+        ]
+      },
+      "impact": "FX trades have relaxed identification requirements."
+    }
+  ]
+}

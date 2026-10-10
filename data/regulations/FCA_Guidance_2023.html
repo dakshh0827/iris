@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FCA Trade Reporting Guidance – 2023</title>
+    <style>
+        body {font-family:Arial,Helvetica,sans-serif; line-height:1.6; margin:2rem;}
+        h1 {font-size:1.8rem; margin-bottom:0.5rem;}
+        h2 {font-size:1.4rem; margin-top:1.5rem; margin-bottom:0.5rem;}
+        p {margin:0.8rem 0;}
+    </style>
+</head>
+<body>
+    <h1>Financial Conduct Authority – Trade Reporting Guidance (2023)</h1>
+
+    <h2>1. Scope and Applicability</h2>
+    <p id="p1">
+        The FCA guidance applies to all UK‑registered investment firms that execute or facilitate the execution of securities, derivatives, and commodity transactions. Firms must adhere to the reporting obligations set out in the FCA Handbook (CFIR, COBS) and the applicable EU regulations that have been retained in UK law post‑Brexit.
+    </p>
+
+    <h2>2. Mandatory Reporting Fields</h2>
+    <p id="p2">
+        For every trade, the following fields are mandatory: Trade_ID, Asset_Class, Execution_Timestamp, Counterparty_LEI (where available), Price, Quantity, Currency, and, for derivatives, Maturity_Date. The field <strong>Currency</strong> must be one of the approved list: USD, EUR, GBP, JPY, CHF.
+    </p>
+
+    <h2>3. FX‑Specific Relaxations</h2>
+    <p id="p3">
+        For foreign‑exchange (FX) trades, the FCA permits the omission of Counterparty_LEI and Underlying_ISIN when the transaction is executed on a recognised FX platform and the counterparties are both FCA‑registered. Nevertheless, firms must retain internal records of the counterparties for audit purposes.
+    </p>
+
+    <h2>4. Timing of Submission</h2>
+    <p id="p4">
+        Trades must be reported to the FCA within the following timeframes:
+        <ul>
+            <li>Equities and bonds – end of the next business day.</li>
+            <li>Derivatives – within 30 minutes of execution.</li>
+            <li>FX – within 60 minutes of execution.</li>
+        </ul>
+        Late submissions are subject to a supervisory notice and may attract a fine of up to £10,000 per breach.
+    </p>
+
+    <h2>5. Data Validation and Reconciliation</h2>
+    <p id="p5">
+        Reporting firms must implement automated validation rules that check for completeness, format compliance (e.g., LEI checksum), and logical consistency (e.g., Price ≥ 0). Validation failures must be logged and corrected before the final report is transmitted.
+    </p>
+
+    <h2>6. Record‑Keeping and Audit Trail</h2>
+    <p id="p6">
+        All reported data, together with the underlying source documents (trade confirmations, order tickets), must be retained for a minimum of five years. The records must be readily accessible to FCA inspectors in a machine‑readable format.
+    </p>
+
+    <h2>7. Recent Amendments (2023‑06‑01)</h2>
+    <p id="p7">
+        Effective 1 June 2023, the FCA introduced a new field <strong>Execution_Venue</strong> for all trades executed on multilateral trading facilities (MTFs). The field must contain the Market Identifier Code (MIC) of the venue. Non‑compliance will result in a breach notice under section 5.5.2 of the FCA Handbook.
+    </p>
+</body>
+</html>
