@@ -88,6 +88,19 @@ class InvalidFileName(UploadRejected):
     status_code = 400
 
 
+class CorruptDocument(IngestionError):
+    """A stored file can't be read: it is damaged, not really the format it
+    claims to be, or protected by a password (Phase 3).
+
+    This is not an UploadRejected error: the upload itself was fine and the
+    original is stored, but its content can't be extracted.
+    """
+
+    code = "corrupt_document"
+    title = "Corrupt document"
+    status_code = 422  # HTTP 422 Unprocessable Content
+
+
 if __name__ == "__main__":
     for error in [
         EmptyFile("The file is empty (0 bytes).", file_name="notes.txt"),

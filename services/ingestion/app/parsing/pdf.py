@@ -8,6 +8,10 @@ PyMuPDF splits a page into "blocks", usually one per paragraph. Each block
 comes as a tuple: (x0, y0, x1, y1, text, block_number, block_type), where
 block_type 0 is text and 1 is an image.
 
+A file PyMuPDF can't open, or one that needs a password, raises
+CorruptDocument (Step 5). A damaged file PyMuPDF manages to repair is read,
+with a warning, because some of its text may be missing.
+
 A page without text is not an error, but it is worth a warning (Step 4):
   - a page with nothing on it, like EMIR_2021_v1.pdf page 2, is just blank;
   - a page with images but no text is probably scanned: its words are only
@@ -25,11 +29,17 @@ from pathlib import Path
 
 import pymupdf
 
+from app.errors import CorruptDocument
 from app.parsing.models import ExtractedDocument, TextBlock
 
 logger = logging.getLogger(__name__)
 
 TEXT_BLOCK = 0  # block_type value for text (1 means image)
+
+# MuPDF (the C library inside PyMuPDF) prints its own messages straight to the
+# screen, e.g. "MuPDF error: format error: ..." for a damaged file. We report
+# problems ourselves (CorruptDocument, warnings), so we switch those off.
+pymupdf.TOOLS.mupdf_display_errors(False)
 
 
 def extract_pdf(path: Path) -> ExtractedDocument:
@@ -43,7 +53,23 @@ def extract_pdf(path: Path) -> ExtractedDocument:
     blocks: list[TextBlock] = []
     warnings: list[str] = []
     scanned_pages: list[int] = []
-    with pymupdf.open(path) as pdf:
+    try:
+        pdf = pymupdf.open(path)
+    except pymupdf.FileDataError as error:  # also covers pymupdf.EmptyFileError
+        raise CorruptDocument(
+            "The PDF can't be opened: it is damaged or not a real PDF.",
+            file_name=path.name,
+        ) from error
+
+    with pdf:
+        if pdf.needs_pass:
+            raise CorruptDocument(
+                "The PDF is password-protected. Upload a copy without a password.",
+                file_name=path.name,
+            )
+        if pdf.is_repaired:
+            warnings.append("The PDF was damaged and has been repaired; some text may be missing.")
+
         page_count = pdf.page_count
         for page in pdf:
             page_number = page.number + 1  # PyMuPDF counts from 0, people count from 1
