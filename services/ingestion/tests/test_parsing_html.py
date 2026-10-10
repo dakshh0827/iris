@@ -1,4 +1,4 @@
-"""Tests for app/parsing/html.py (Phase 3, Steps 6 and 7).
+"""Tests for app/parsing/html.py (Phase 3, Steps 6 and 7; encoding fix after Phase 5).
 
 The first tests use the real FCA_Guidance_2023.html. The others write tiny
 HTML files into pytest's temporary folder to check one rule at a time.
@@ -116,8 +116,25 @@ def test_empty_page_gives_a_warning(tmp_path: Path) -> None:
 
 def test_undecodable_bytes_give_a_warning(tmp_path: Path) -> None:
     path = tmp_path / "bad.html"
-    # \x81 and \x8d are not valid UTF-8, and not valid Windows-1252 (BeautifulSoup's next guess) either.
+    # \x81 and \x8d are not valid UTF-8, and not valid Windows-1252 (our next try) either.
     path.write_bytes(b'<meta charset="utf-8"><p id="a">Bad \x81\x8d bytes</p>')
     document = extract_html(path)
     assert document.blocks[0].text == "Bad \ufffd\ufffd bytes"
-    assert document.warnings == ["Some characters could not be decoded and were replaced with U+FFFD."]
+    assert document.warnings == ["The file is not valid UTF-8; it was read as Windows-1252.",
+                                 "Some characters could not be decoded and were replaced with U+FFFD."]
+
+
+def test_declared_charset_is_used(tmp_path: Path) -> None:
+    path = tmp_path / "latin.html"
+    path.write_bytes(b'<meta charset="iso-8859-1"><p id="a">Caf\xe9 r\xe8gle</p>')
+    document = extract_html(path)
+    assert document.blocks[0].text == "Caf\u00e9 r\u00e8gle"
+    assert document.warnings == []
+
+
+def test_windows_1252_without_a_charset_is_read_with_a_warning(tmp_path: Path) -> None:
+    path = tmp_path / "old.html"
+    path.write_bytes(b'<p id="a">\x93Quoted\x94 \x96 dash</p>')
+    document = extract_html(path)
+    assert document.blocks[0].text == "\u201cQuoted\u201d \u2013 dash"
+    assert document.warnings == ["The file is not valid UTF-8; it was read as Windows-1252."]

@@ -1,1 +1,1 @@
-﻿"""Document families, versions, duplicates and metadata resolution (Phase 5)."""
+"""Document metadata, duplicate detection, versions and status (Phase 5)."""

@@ -16,19 +16,28 @@ just add their text to the current one. A paragraph that contains a list
 becomes: the text before the list, one block per list item, then the text
 after the list, all with the paragraph's anchor.
 
+Encoding: we turn the bytes into text ourselves (decode_html) instead of
+letting BeautifulSoup guess. If a guessing library such as charset-normalizer
+happens to be installed, BeautifulSoup uses it, and broken bytes can come out
+as different letters on different machines. Our rule is always the same: the
+<meta charset> if it works, otherwise UTF-8, otherwise Windows-1252 (as for TXT).
+
 Try it from services/ingestion:   python -m app.parsing.html
 """
 
 from __future__ import annotations
 
+import codecs
 import logging
 import re
 from pathlib import Path
 
 from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4.dammit import EncodingDetector
 from bs4.element import PreformattedString
 
 from app.parsing.models import BlockKind, ExtractedDocument, TextBlock
+from app.parsing.txt import decode_text
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +110,23 @@ class _BlockCollector:
         ))
 
 
+def decode_html(data: bytes) -> tuple[str, list[str]]:
+    """Bytes to text: the declared <meta charset> first, then the same rules as TXT files."""
+    declared = EncodingDetector.find_declared_encoding(data, is_html=True)
+    if declared:
+        try:
+            if codecs.lookup(declared).name != "utf-8":  # UTF-8 is decode_text's first try anyway
+                return data.decode(declared), []
+        except (LookupError, UnicodeDecodeError):
+            pass  # unknown name, or the bytes don't match it: fall back
+    text, _encoding, warnings = decode_text(data)
+    return text, warnings
+
+
 def extract_html(path: Path) -> ExtractedDocument:
     """Read an HTML file and return its text blocks with anchors and headings."""
-    # Given bytes, BeautifulSoup finds the encoding itself (from <meta charset> or by guessing).
-    soup = BeautifulSoup(path.read_bytes(), "html.parser")
+    html, warnings = decode_html(path.read_bytes())
+    soup = BeautifulSoup(html, "html.parser")
     for tag in soup.find_all(REMOVED_TAGS):
         tag.decompose()
 
@@ -115,9 +137,6 @@ def extract_html(path: Path) -> ExtractedDocument:
     collector.walk(soup.body or soup)
     collector.flush()
 
-    warnings: list[str] = []
-    if soup.contains_replacement_characters:
-        warnings.append("Some characters could not be decoded and were replaced with U+FFFD.")
     if not collector.blocks:
         warnings.append("No text found in the HTML.")
     for warning in warnings:

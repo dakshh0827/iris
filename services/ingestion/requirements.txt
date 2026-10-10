@@ -1,7 +1,7 @@
 # Reg IRIS ingestion service: pinned dependencies.
-# Install with:  python -m pip install -r requirements.txt
+# Install with (from the project root):  python -m pip install -r services/ingestion/requirements.txt
 # Tested on Python 3.11. More libraries are added in later phases
-# (database in Phase 5, embeddings in Phase 6, ChromaDB in Phase 7, Elasticsearch in Phase 8).
+# (embeddings in Phase 6, ChromaDB in Phase 7, Elasticsearch in Phase 8).
 
 # --- Web API (Phase 1, 9) ---
 fastapi==0.143.0            # the web framework for our REST endpoints
@@ -15,6 +15,10 @@ pydantic-settings==2.15.0   # reads settings from environment variables and .env
 # --- Document extraction (Phase 3) ---
 pymupdf==1.28.2             # PDF text extraction with page numbers (import pymupdf)
 beautifulsoup4==4.15.0      # HTML parsing (we use Python's built-in "html.parser")
+
+# --- Database (Phase 5) ---
+sqlalchemy==2.0.54          # talks to PostgreSQL with Python classes instead of raw SQL
+psycopg[binary]==3.2.13     # the PostgreSQL driver SQLAlchemy uses ("postgresql+psycopg://")
 
 # --- Testing (every phase) ---
 pytest==9.1.1               # test runner

@@ -1,4 +1,4 @@
-﻿"""Application settings for the ingestion service.
+"""Application settings for the ingestion service.
 
 Every value the service needs from its environment (folders, limits, log level,
 and later the database and search addresses) is defined here, in one place.
@@ -17,7 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # This file is <root>/services/ingestion/app/config.py, so the project root is
@@ -45,6 +45,13 @@ class Settings(BaseSettings):
 
     # Uploads bigger than this are rejected in Phase 2. EMIR_2021_v2.pdf (3.8 MB) is our largest file.
     max_upload_size_mb: int = Field(default=50, gt=0, le=500)
+
+    # PostgreSQL (Phase 5). No default: the password must come from .env, never from code.
+    # SecretStr hides the value when settings are printed or logged.
+    # Example: postgresql+psycopg://iris:<password>@localhost:5432/reg_iris
+    database_url: SecretStr | None = None
+    # A separate, throw-away database for the tests. Tests that need it are skipped when it isn't set.
+    test_database_url: SecretStr | None = None
 
     @field_validator("log_level", mode="before")
     @classmethod

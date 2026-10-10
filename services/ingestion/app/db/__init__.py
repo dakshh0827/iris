@@ -1,1 +1,1 @@
-﻿"""PostgreSQL connection, sessions and table models (Phase 5)."""
+"""PostgreSQL tables and connections (Phase 5)."""
