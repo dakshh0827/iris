@@ -1,1 +1,1 @@
-﻿"""Text cleaning, clause-level chunking and integrity checks (Phase 4)."""
+"""Cleaning and splitting extracted text into citable chunks (Phase 4)."""
